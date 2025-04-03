@@ -1,0 +1,15 @@
+{
+  "name": "scorm_to_sql",
+  "version": "0.1.0",
+  "description": "Migrate SCORM registration to update local DB.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "scorm_to_sql"
+  },
+  "author": "Bill Lee",
+  "license": "ISC"
+}
