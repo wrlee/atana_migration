@@ -3,13 +3,24 @@
   "version": "0.1.0",
   "description": "Migrate SCORM registration to update local DB.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "test"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
   },
   "repository": {
     "type": "git",
     "url": "scorm_to_sql"
   },
   "author": "Bill Lee",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "mysql2": "^3.14.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
 }
