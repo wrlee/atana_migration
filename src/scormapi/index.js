@@ -44,6 +44,35 @@ export default class ScormApi {
   }
 
   /**
+   * Retreive course record.
+   *
+   * @param {object} filter_params
+   * @param {callback} callback Handle results
+   * @returns
+   */
+  getCourses(filter_params = {}) {
+    return this.getCourse('', filter_params)
+  }
+
+  /**
+   * Retreive course record.
+   *
+   * @param {object} filter_params
+   * @param {callback} callback Handle results
+   * @returns
+   */
+  getCourse(id, filter_params = {}) {
+    return this.get(`/courses/${id}`, filter_params)
+      .then(response => {
+        console.debug(response)
+        return response.json()
+      })
+      .catch(error => {
+        console.error('Error fetching courses:', error)
+      })
+  }
+
+  /**
    * Retreive registrations.
    *
    * @param {object} filter_params
@@ -60,31 +89,4 @@ export default class ScormApi {
         console.error('Error fetching registrations:', error)
       })
   }
-
-  /**
-   * This method allows registration data to be processed by a callback function. This
-   * handles the case where there are multiple pages of data to be processed, calling the callback
-   * for each page of data.
-   *
-   * @param {callback} callback(Registrations[]) Callback to handle retrieved registrations
-   * @param {*} filter_params
-   * @returns {Promise} - Promise that resolves when all registrations' pages have been processed
-   */
-  processRegistrations(callback, filter_params) {
-    return this.getRegistrations(filter_params)
-      .then(response => {
-        const promises = []
-        if (callback && Array.isArray(response.registrations))
-          promises.push(callback(response.registrations))
-        if (response.more) {    // Handle pagination
-          console.log(`More registrations available (${response.more}).`)
-          promises.push(this.getRegistrations({more: response.more}))
-        }
-        return Promise.all(promises)
-      })
-      .catch(error => {
-        console.error('Error fetching registrations:', error)
-      })
-  }
-
 } // class ScormApi

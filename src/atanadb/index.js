@@ -5,9 +5,6 @@ import mysql from 'mysql2/promise'
 
 export default class AtanaDb {
   constructor() {
-    this.connection = null
-    this.migrateRegistrations = this.migrateRegistrations.bind(this)
-
     this.initialize()
   }
 
@@ -44,6 +41,17 @@ export default class AtanaDb {
       this.connection = null
       console.log('MySQL connection closed.')
     }
+  }
+
+  async beginTransaction() {
+    await this.connect()
+    return this.connection.beginTransaction()
+  }
+  commit() {
+    return this.connection.commit()
+  }
+  rollback() {
+    return this.connection.rollback()
   }
 
   /**
@@ -87,10 +95,10 @@ export default class AtanaDb {
             rootActivity JSON -- Root activity stored as JSON (assuming CourseActivitySchema can be represented as JSON)
         );`,
        `CREATE TABLE IF NOT EXISTS learners (
-            id VARCHAR(${ID_LENGTH}) PRIMARY KEY, -- Unique identifier for the learner
-            email VARCHAR(128), -- Optional email push associated with the learner
-            firstName VARCHAR(100), -- First name of the learner
-            lastName VARCHAR(100) -- Last name of the learner
+            id VARCHAR(${ID_LENGTH}) PRIMARY KEY,
+            email VARCHAR(128),
+            firstName VARCHAR(100),
+            lastName VARCHAR(100)
         );`,
         `CREATE TABLE IF NOT EXISTS registrations (
             id VARCHAR(${ID_LENGTH}) PRIMARY KEY, -- check max length
@@ -110,10 +118,10 @@ export default class AtanaDb {
             course JSON,
             learner_id VARCHAR(${ID_LENGTH}) NOT NULL,
             tags JSON, -- Consider tags table to manage tags across the system
-            globalObjectives JSON, -- Assuming globalObjectives is an array that can be stored as JSON
-            sharedData JSON, -- Assuming sharedData is an array that can be stored as JSON
-            suspendedActivityId VARCHAR(255),,
-            activityDetails JSON -- Assuming ActivityResultSchema can be represented as JSON
+            globalObjectives JSON,
+            sharedData JSON,
+            suspendedActivityId VARCHAR(255),
+            activityDetails JSON
         );`
       ]
 
@@ -129,66 +137,36 @@ export default class AtanaDb {
   } // initialize()
 
   /**
-   * Match JSON registration object to DB schema.
+   * Insert or update a row in the specified table.
    *
-   * @param {object} registration
+   * @param {string} table Table name to update/insert
+   * @param {object} data Row data to insert/update
+   * @returns Promise
    */
-  transformRegistrationToStore(registration) {
-    const db_reg = {
-      ...registration,
-      learner_id: registration.learner.id
-    }
-    delete db_reg.learner
-
-    return db_reg
+  upsert(tablename, data) {
+    const sql = `INSERT INTO ${tablename} SET ? ON DUPLICATE KEY UPDATE ?`
+    return this.connection.execute(sql, [data, data])
   }
 
   /**
-   * Insert Registration object into DB. This may result in records being inserted
-   * into multiple tables (e.g. learners, registrations). This will not overwrite an existing
-   * matching record so that it can be run mutiple times over the same data.
-   *
-   * TODO: Ensure record chagnes update existing records.
+   * Insert or update course record.
    */
-  async insertRegistration(registration) {
-    try {
-      await this.connect()
-      await this.connection.beginTransaction()
-      const promises = []
-
-      let sql = `INSERT IGNORE INTO registrations SET ?`
-      promises.push( this.connection.execute(sql, this.transformRegistrationToStore(registration)) )
-
-      sql = `INSERT IGNORE INTO learners SET ?`
-      promises.push( this.connection.execute(sql, registration.learner) )
-
-      promises.push( this.connection.commit() )
-      await Promise.all(promises)
-
-    } catch (error) {
-      console.error('Error inserting registration:', error)
-      await this.connection.rollback()
-    }
+  upsertCourse(course) {
+    return this.upsert('courses', course)
   }
 
   /**
-   * Callback function to process array of Registrations
-   * @param {Registration[]} registrations
+   * Insert or update lerner record.
    */
-  async migrateRegistrations(registrations) {
-    console.log('Migrating registrations...')
-    console.log(this)
-    // const db = await this.connect()
+  upsertLerner(lerner) {
+    return this.upsert('lerners', lerner)
+  }
 
-    registrations.forEach((reg) => {
-      this.insertRegistration(reg)
-        .then(() => {
-          console.log('Inserted registration:', reg.id)
-        })
-        .catch((error) => {
-          console.error('Error inserting registration:', error)
-        })
-    })
+  /**
+   * Insert or update registration record.
+   */
+  upsertRegistration(registration) {
+    return this.upsert('registrations', registration)
   }
 
 } // class AtanaDb
