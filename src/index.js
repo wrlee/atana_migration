@@ -1,5 +1,5 @@
-import { ScormApi } from './scormapi/index.js'
-import { AtanaDb } from './atanadb/index.js'
+import ScormApi from './scormapi/index.js'
+import AtanaDb from './atanadb/index.js'
 
 /**
  * Main code (suitable for Lambda implementation)

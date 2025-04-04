@@ -3,7 +3,7 @@ import mysql from 'mysql2/promise'
 // import sqlite3 from 'sqlite3'
 // import { open } from 'sqlite'
 
-export class AtanaDb {
+export default class AtanaDb {
   constructor() {
     this.connection = null
     this.migrateRegistrations = this.migrateRegistrations.bind(this)

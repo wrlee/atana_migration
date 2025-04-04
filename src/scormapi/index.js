@@ -3,7 +3,7 @@ import { URL, URLSearchParams } from 'url'
 /**
  * SCORM API class to handle SCORM API calls
  */
-export class ScormApi {
+export default class ScormApi {
   scormUrl = 'https://cloud.scorm.com/api/v2'
 
   constructor() {
@@ -53,7 +53,7 @@ export class ScormApi {
   getRegistrations(filter_params = {}) {
     return this.get('/registrations', filter_params)
       .then(response => {
-        console.log(response)
+        console.debug(response)
         return response.json()
       })
       .catch(error => {
@@ -76,9 +76,8 @@ export class ScormApi {
         const promises = []
         if (callback && Array.isArray(response.registrations))
           promises.push(callback(response.registrations))
-        if (response.more) {
+        if (response.more) {    // Handle pagination
           console.log(`More registrations available (${response.more}).`)
-          // Handle pagination
           promises.push(this.getRegistrations({more: response.more}))
         }
         return Promise.all(promises)
