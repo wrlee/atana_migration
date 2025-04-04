@@ -5,6 +5,10 @@ This module reads SCORM registration and populates/updates the information into 
 ## Implementation Notes
 This project is a Node.js application that initializes a MySQL database. It uses dotenv to manage environment variables and mysql2/promise for asynchronous database operations.
 
+### TODOs
+- Use Prisma ORM to generalize DB interactions in `AtanaDb`
+- Have `ScormApi` class use `scormcloud-api-v2-client-javascript` rather than handle fetch directly
+
 ### Prerequisites
 - Node.js: Ensure you have Node.js installed (version 14 or later).
 - MySQL Database: You need a running MySQL database instance.
@@ -12,7 +16,7 @@ This project is a Node.js application that initializes a MySQL database. It uses
 ### Installation
 1. Clone the repository:
 ```
-git clone <repository_url>
+git clone git@github.com:wrlee/atana_migration.git
 cd scorm_to_sql
 ```
 
@@ -40,13 +44,13 @@ APP_SECRET=login_pw
 - `DB_HOST`: The hostname or IP address of your MySQL server. Default, `localhost`
 
 - `DB_USER`: Your MySQL username.
--
+
 - `DB_PASSWORD`: Your MySQL password.
 
 - `DB_DATABASE`: The name of the MySQL database you want to use.
 
 - `APP_ID`: SCORM userid
--
+
 - `APP_SECRET`: SCORM password
 
 **Important:** Do not commit your .env file to version control (e.g., Git) to prevent exposing your database credentials. Add `.env` to your `.gitignore` file.

@@ -25,6 +25,14 @@ export default class Migration {
       delete dbRegistration.learner
       dbRegistration.learner_id = registration.learner.id
 
+      // Ensure course exists
+      if (registration?.course?.id) {
+        const course = await this.api.getCourse(registration.course.id)
+        if (course) {
+          promises.push( this.db.upsertCourse(course) )
+        }
+      }
+
       promises.push( this.db.upsertRegistration(registration) )
 
       promises.push( this.db.commit() )
